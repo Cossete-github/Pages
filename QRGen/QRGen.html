@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QRコードジェネレータ</title>
+</head>
+<body>
+    <label>入力テキスト</label>
+    <div id="i">
+        <input type="text" ID="t" oninput="i();"/>
+        <input id="s" type="button" onclick="b();" disabled="true" value="QR生成">
+    </div>
+    <div id="o"></div>
+    <script type="text/javascript" src="qrcode.min.js"></script>
+    <script type="text/javascript">
+        function i(){   
+            document.getElementById('s').disabled = !document.getElementById('t').value;
+        }
+        function b(){
+            const d = document.getElementById('o');
+            while(d.firstChild){
+                d.removeChild(d.firstChild);
+            }
+            new QRCode('o').makeCode(document.getElementById('t').value);
+        }
+    </script>
+    <style>
+        #o{
+            margin-top: 16px;
+        }
+    </style>
+</body>
+</html>
