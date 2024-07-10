@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>DQ7先制率計算機</title>
+</head>
+<body>
+    <div>
+        <div>
+            <label>すばやさ1: </label><input type="number" id="num1" min="0" max="999" /><br/>
+            <label>すばやさ2: </label><input type="number" id="num2" min="0" max="999" />
+        </div>
+        <div>
+            <label>約分: </label>
+            <input type="radio" id="on" name="radio" onclick="startCalc();" checked /> 
+            <lebel for="on">する</lebel>
+            <input type="radio" id="off" name="radio" onclick="startCalc();"/> 
+            <lebel for="off">しない</lebel>
+        </div>
+    </div>
+    <div>先制率: <span id="span"></span></div>
+    <script>
+        const input1 = document.getElementById('num1');
+        const input2 = document.getElementById('num2');
+        const inputs = [input1, input2];
+        function min(a, b) {
+            return a < b ? a : b;
+        }
+        function max(a, b) {
+            return a < b ? b : a;
+        }
+        function calcGCD(a, b) {
+            const low = min(a, b);
+            const high = max(a, b);
+            return high % low ? calcGCD(low, high % low) : low;
+        }
+        function calcTriNum(n) {
+            return n * (n + 1) / 2;
+        }
+        class Fraction {
+            #child = 0;
+            #parent = 0;
+            constructor(child, parent) {
+                this.#child = child;
+                this.#parent = parent;
+            }
+            reduction() {
+                if (this.#child == 0) {
+                    this.#parent = 1;
+                    return;
+                }
+                const gcd = calcGCD(this.#child, this.#parent);
+                this.#child = this.#child / gcd;
+                this.#parent = this.#parent / gcd;
+            }
+            ratio() {
+                return this.#child == 0 ? 0 : this.#child + '/' + this.#parent;
+            }
+            percentage(ketasuu) {
+                return this.#parent == 0 ? 'devided by 0' : (100 * this.#child / this.#parent).toFixed(ketasuu) + '%';
+            }
+        }
+        function calcFaster(a, b) {
+            const a_min = max(a, 1) << 5;
+            const a_max = a_min << 1;
+            const b_min = max(b, 1) << 5;
+            const b_max = b_min << 1;
+            let child = 0;
+            const b_len = b_min + 1;
+            const parent = (a_min + 1) * b_len;
+            if (b_max <= a_min) {
+                child = parent;
+            }
+            else if (b_max < a_max) {
+                const len = b_max - a_min + 1;
+                child = (a_min - b_min) * len + calcTriNum(len) + (b_len * (a_max - b_max));
+            }
+            else if (b_min <= a_max) {
+                child = calcTriNum(a_max - b_min + 1);
+            }
+            else {
+                child = 0;
+            }
+            return new Fraction(child, parent);
+        }
+        const startCalc = function () {
+            const fraction = calcFaster(parseInt(input1.value), parseInt(input2.value));
+            if(document.getElementById('on').checked) fraction.reduction();
+            document.getElementById('span').innerText = fraction.ratio() + ' (' + fraction.percentage(2) + ')';
+        };
+        const clamp = function (e) {
+            if (this.box.value < 0) {
+                this.box.value = 0;
+                return;
+            }
+            if (999 < this.box.value) {
+                this.box.value = 999;
+            }
+        };
+        inputs.forEach(e => e.addEventListener('input', { box: e, handleEvent: clamp }, false));
+        inputs.forEach(e => e.addEventListener('change', startCalc, false));
+        inputs.forEach(e => e.addEventListener('input', startCalc, false));
+        input1.value = input2.value = 1;
+        startCalc();
+        input1.focus();
+    </script>
+</body>
+</html>
